@@ -2,14 +2,15 @@ import pandas as pd
 import numpy as np
 
 class RM():
-    def __innit__(self, data:pd.DataFrame, yname:str):
+    def __init__(self, data:pd.DataFrame, yname:str):
         self.data = data
         self.y = data[yname]
         self.x = data.drop(yname, axis = 1)
         
+        self.varset = None
         self.beta = self._calculate_params()
 
-        return self.beta
+        return None
 
 
     def _calculate_params(self):
@@ -34,6 +35,6 @@ class RM():
         p = len(beta)
         gl = n-p
 
-        varest = SSE / gl
+        self.varest = SSE / gl
 
-        return beta, varest
+        return beta
