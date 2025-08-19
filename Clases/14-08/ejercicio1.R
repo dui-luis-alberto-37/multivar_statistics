@@ -18,6 +18,7 @@ X
 
 y <- matrix(datos$y, nrow = n, ncol = 1)
 y
+
 beta <- solve(t(X) %*% X) %*% t(X) %*% y
 beta
 
