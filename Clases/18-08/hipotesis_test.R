@@ -121,6 +121,10 @@ C22
 t0 <- beta_2 / sqrt(varest * C22)
 t0
 
+## alfa = 0.05, p = 2, n = 25
+## buscamos el t_{\alfa/2, n-p-1} en una tabla de distribuciones 
+## que nos da 2.0687 por lo q se rechasa h0 que es Bj = 0
+
 
 ## t tabulado con confianza 95% y 22 grados de libertad
 tt <- qt(p = 0.95 + 0.05/2, df = df2, lower.tail = TRUE)
