@@ -1,3 +1,4 @@
+# se copia hipotesis_test.R para continuar
 datos <- data.frame( # refrescos
   Observacion = 1:25,
   y = c(16.68, 11.50, 12.03, 14.88, 13.75,
@@ -22,8 +23,7 @@ pairs(datos[-1])
 
 n = length(datos$y)
 p = length(datos)-1
-n
-p
+
 
 idv <- rep(1, n)
 idv
@@ -62,8 +62,8 @@ F0 <- (SCE / (ncol(X) - 1)) / (SSE / (nrow(X) - (ncol(X) -1) - 1))
 F0
 
 # Usuando modelo calculado M1
-  
-  # Suma de Cuadrados
+
+# Suma de Cuadrados
 
 SCT.m =sum((datos$y-mean(datos$y))^2)
 SCT.m
@@ -74,7 +74,7 @@ SCE.m
 SSE.m = sum(M1$residuals^2)
 SSE.m
 
-  # Grados de libertad
+# Grados de libertad
 
 GLT = n-1
 GLT
@@ -85,7 +85,7 @@ GLRes
 GLR<- GLT-GLRes
 GLR
 
-  # Cuadrados Medios
+# Cuadrados Medios
 
 CMR <- SCE /GLR
 CMR
@@ -93,17 +93,17 @@ CMR
 CMRes <- SSE / GLRes
 CMRes
 
-  # F
+# F
 
 F0 <- CMR/CMRes
 F0
 
-  # p-value
+# p-value
 
 pv <- 1 - pf(F0, GLR,GLRes)
 pv
 
-  # tabulado de F
+# tabulado de F
 
 alpha <- 0.05 
 df1 <- GLR
@@ -114,7 +114,7 @@ F_crit
 
 #Pruebas sobre coeficientes individuales de regresión
 
-  #Estadístico t0
+#Estadístico t0
 
 C22 <- solve(t(X) %*% X)[3,3]
 C22
@@ -135,4 +135,58 @@ tt
 
 summary(M1)
 
+C11 = solve(t(X) %*% X)[2,2]
+C11
+
+izq <- beta_1 - tt * sqrt(varest*C11)
+izq
+
+der <- beta_1 + tt * sqrt(varest*C11)
+der
+
+## mientras más pequeño el intervalo más confianza da la respuesta
+der - izq
+
+
+## x1 = 8 cajas y x2 = 275 pies de distancia
+
+X_0 = matrix(c(1,8,275), nrow = 3)
+Y_0 = t(X_0)%*% beta
+Y_0
+
+var_y0 = varest * t(X_0)%*%solve(t(X)%*%X)%*%X_0
+var_y0
+
+
+l_izq = Y_0 -tt*sqrt(var_y0)
+l_izq
+
+l_der = Y_0 +tt*sqrt(var_y0)
+l_der
+
+library(datarium)
+data('marketing')
+
+str(marketing)
+
+
+modelo = lm(sales ~ youtube + facebook + newspaper, marketing)
+modelo
+
+summary(modelo)
+
+# eliminamos newsparer por falta de significancia
+modelo2 = lm(sales ~ youtube + facebook, marketing)
+
+summary(modelo2)
+
+
+## ejercicio 1:Realizar las pruebas de hipótesis sobre la significancia 
+## de la regresión y sobre los coeficientes. Encontrar los intervalos de
+## confianza respectivos del 95%. Para una tienda con presupuestos: youtube=150,
+## facebook=30, newspaper=20 (en miles de USD): (a) Calcula el intervalo de
+## confianza del 95% para la media de ventas E(sales|X0). (b) Calcula el 
+## intervalo de predicción del 95% para una nueva observación de ventas.
+## (c) Comenta la diferencia entre ambos intervalos. Subir respuesta y
+## explicación de sus resultados a github.
 
