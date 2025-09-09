@@ -1,4 +1,5 @@
-setwd("git/TIC'S/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
+# git/TIC'S
+setwd("Tic's/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
 source('../../mylibrary/RegresionMultiple.R')
 
 
@@ -27,4 +28,19 @@ F1 = qf(1-alpha,df[1],df[2])
 F1
 
 anova(m1)
+
+
+t0 = t_0_values(datos, 'y', 'x2', 'x7', 'x8')
+t0
+
+tt <- qt(1 - alpha/2, df[2], lower.tail = TRUE)
+tt
+
+p_values = 2 * pt(-abs(t0), df[2])
+p_values
+
+summary(m1)
+
+R2 = glance(m1)$r.squared
+R2 = R2adj = glance(m1)$adj.r.squared
 
