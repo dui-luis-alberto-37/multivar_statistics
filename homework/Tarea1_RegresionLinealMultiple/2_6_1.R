@@ -13,8 +13,18 @@ plot_gg(datos, 'y', 'x2', 'x7', 'x8')
 m1 = lm('y ~ x2 + x7 + x8', datos)
 m1
 
-summary(m1)
+anov_t = anova_table(datos, 'y', 'x2', 'x7', 'x8')
+anov_t
+F0 = anov_t[1,'F_0']
+F0
+df = anov_t$'Grados de libertad'
+
+pvlue = pf(F0,df[2],df[1])
+pvlue
+
+alpha = 0.05
+F1 = qf(1-alpha,df[1],df[2])
+F1
 
 anova(m1)
-
 
