@@ -33,3 +33,48 @@ plot_gg = function(Data, y, ...) {
   }
   do.call(grid.arrange, c(gg, list(ncol = min(n, 3))))
 }
+
+anova_table = function(Data, y, ...){
+  n = length(Data$y)
+  p = length(c(...))+1
+  X <- cbind(1, as.matrix(Data[, c(...)]))
+  X = matrix(X, nrow=n,ncol=p)
+  Y <- matrix(Data$y)
+  beta <- solve(t(X) %*% X) %*% t(X) %*% Y
+  
+  anov = data.frame(
+    'Fuente de Variación' = c('Regresión', 'Residuales', 'Total'),
+    stringsAsFactors = FALSE
+  )
+  
+  scr = t(beta) %*% t(X) %*% Y - sum(Y)**2 / n
+  sce = t(Y) %*% Y -  t(beta) %*% t(X) %*% Y
+  sct = t(Y) %*% Y -  sum(Y)**2 / n
+  anov$'Suma de cuadrados' = c(scr,sce,sct)
+  
+  glr = p - 1
+  gle = n - p
+  glt = n - 1
+  anov$'Grados de libertad' = c(glr, gle, glt)
+  
+  cmr = scr/glr
+  cme = sce/gle
+  anov[1, 'Cuadrados medios'] = cmr
+  anov[2, 'Cuadrados medios'] = cme
+  
+  f0 = cmr/cme
+  anov[1, 'F_0'] = f0
+  return(anov)
+}
+
+t_0_values = function(Data, y, ...){
+  n = length(Data$y)
+  p = length(c(...))+1
+  X <- cbind(1, as.matrix(Data[, c(...)]))
+  X = matrix(X, nrow=n,ncol=p)
+  Y <- matrix(Data$y)
+  beta <- solve(t(X) %*% X) %*% t(X) %*% Y
+  return(beta)
+}
+
+t_0_values(datos, 'y', 'x2', 'x7', 'x8')
