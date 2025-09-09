@@ -74,7 +74,20 @@ t_0_values = function(Data, y, ...){
   X = matrix(X, nrow=n,ncol=p)
   Y <- matrix(Data$y)
   beta <- solve(t(X) %*% X) %*% t(X) %*% Y
-  return(beta)
+  C = solve(t(X) %*% X)
+  Cii = matrix(nrow = p)
+  for(i in 1:p){
+    Cii[i,1] = C[i,i]
+  }
+  
+  sce = t(Y) %*% Y -  t(beta) %*% t(X) %*% Y
+  gle = n - p
+  cme = sce/gle
+  
+  return(c(beta / sqrt(rep(cme,length.out = p) * Cii)))
 }
 
+
 t_0_values(datos, 'y', 'x2', 'x7', 'x8')
+
+#anova_table(datos, 'y', 'x2', 'x7', 'x8')
