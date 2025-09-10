@@ -1,5 +1,5 @@
 # git/TIC'S
-setwd("Tic's/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
+setwd("git/TIC'S/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
 source('../../mylibrary/RegresionMultiple.R')
 
 
@@ -47,3 +47,9 @@ R2adj = glance(m1)$adj.r.squared
 
 R2
 R2adj
+
+
+man_R2(datos , 'y' , 'x2' , 'x7' , 'x8')
+man_R2_adj(datos , 'y' , 'x2' , 'x7' , 'x8')
+
+

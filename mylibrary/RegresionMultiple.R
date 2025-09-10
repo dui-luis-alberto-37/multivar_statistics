@@ -87,11 +87,21 @@ t_0_values = function(Data, y, ...){
   return(c(beta / sqrt(rep(cme,length.out = p) * Cii)))
 }
 
-man_R2 = function(AnovTab){
-  SC
+man_R2 = function(Data, y, ...){
+  AnovTab = anova_table(Data, y, ...)
+  scr = AnovTab[1,'Suma de cuadrados']
+  sct = AnovTab[3,'Suma de cuadrados']
+  return(scr/sct)
+}
+
+man_R2_adj = function(Data, y, ...){
+  AnovTab = anova_table(Data, y, ...)
+  cme = AnovTab[2,'Cuadrados medios']
+  cmt = AnovTab[3,'Suma de cuadrados'] / AnovTab[3,'Grados de libertad']
+  return(1 - (cme/cmt))
 }
 
 
-t_0_values(datos, 'y', 'x2', 'x7', 'x8')
+#t_0_values(datos, 'y', 'x2', 'x7', 'x8')
 
-#anova_table(datos, 'y', 'x2', 'x7', 'x8')
+anova_table(datos, 'y', 'x2', 'x7', 'x8')
