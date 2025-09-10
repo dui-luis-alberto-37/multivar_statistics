@@ -41,6 +41,9 @@ p_values
 
 summary(m1)
 
+library(broom)
 R2 = glance(m1)$r.squared
-R2 = R2adj = glance(m1)$adj.r.squared
+R2adj = glance(m1)$adj.r.squared
 
+R2
+R2adj

@@ -87,6 +87,10 @@ t_0_values = function(Data, y, ...){
   return(c(beta / sqrt(rep(cme,length.out = p) * Cii)))
 }
 
+man_R2 = function(AnovTab){
+  SC
+}
+
 
 t_0_values(datos, 'y', 'x2', 'x7', 'x8')
 
