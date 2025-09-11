@@ -1,5 +1,5 @@
 # git/TIC'S
-setwd("git/TIC'S/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
+setwd("Tic's/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
 source('../../mylibrary/RegresionMultiple.R')
 
 
@@ -52,4 +52,23 @@ R2adj
 man_R2(datos , 'y' , 'x2' , 'x7' , 'x8')
 man_R2_adj(datos , 'y' , 'x2' , 'x7' , 'x8')
 
+qqnorm(m1$residuals)
+qqline(m1$residuals)
 
+ggplot(datos, aes(sample = m1$residuals)) +
+  stat_qq() +
+  stat_qq_line(color = "red") +
+  labs(x = "Cuantiles Teóricos",
+       y = "Cuantiles Muestrales") +
+  theme_minimal()
+
+shapiro.test(m1$residuals)
+
+ggplot(m1, aes(x=m1$fitted.values, y=m1$residuals)) +
+  geom_point(alpha=0.7,color='blue',size=2) +
+  labs(
+    title = 'Grafico Residuales vs Respuesta Predica',
+    x = 'Juegos ganados',
+    y = 'Residuales'
+  ) +
+  theme_minimal()

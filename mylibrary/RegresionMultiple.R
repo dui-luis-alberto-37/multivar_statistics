@@ -104,4 +104,4 @@ man_R2_adj = function(Data, y, ...){
 
 #t_0_values(datos, 'y', 'x2', 'x7', 'x8')
 
-anova_table(datos, 'y', 'x2', 'x7', 'x8')
+#anova_table(datos, 'y', 'x2', 'x7', 'x8')
