@@ -101,6 +101,56 @@ man_R2_adj = function(Data, y, ...){
   return(1 - (cme/cmt))
 }
 
+extraer_datos_lm <- function(modelo) {
+  # Obtener el marco de datos del modelo
+  mf <- model.frame(modelo)
+  
+  # Extraer la variable respuesta (y)
+  y <- model.response(mf)
+  
+  # Extraer la matriz de predictores (todas las variables excepto y)
+  # Excluimos la primera columna que es la variable respuesta
+  X <- model.matrix(modelo)[1:28,2:ncol(model.matrix(m1))]
+  
+  # Obtener nombres de las variables
+  nombres_y <- names(mf)[1]  # Primera variable es la respuesta
+  nombres_x <- colnames(X)[-1]  # Excluir el intercepto
+  
+  return(list(
+    y = y,
+    X = X,
+    nombre_y = nombres_y,
+    nombres_x = nombres_x,
+    formula = formula(modelo)
+  ))
+}
+
+res_vs_vars_plot = function(modelo) {
+  colors = c("red", "blue", "green","cyan", "magenta", "yellow", "black",
+             
+             "gray")
+  
+  
+  info = extraer_datos_lm(modelo)
+  
+  n = length(info$nombres_x)
+  colors = rep(colors, length.out = n)
+  
+  x_vars = info$nombres_x
+  gg = list()
+  
+  Data = model.frame(modelo)
+  for(i in 1:length((x_vars))){
+    gg[[i]] = ggplot(data = Data, mapping = aes(x = !!sym(x_vars[i]), y = modelo$residuals)) +
+      geom_point(color = colors[i], size = 2) +
+      labs(y = 'Residuales', x  = x_vars[i] ) +
+      geom_smooth(method = "lm", se = FALSE, color = "black") +
+      theme_bw() +
+      theme(plot.title = element_text(hjust = 0.5))
+  }
+  do.call(grid.arrange, c(gg, list(ncol = min(n, 3))))
+}
+
 
 #t_0_values(datos, 'y', 'x2', 'x7', 'x8')
 

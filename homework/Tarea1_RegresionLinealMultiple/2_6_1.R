@@ -1,5 +1,5 @@
 # git/TIC'S
-setwd("Tic's/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
+setwd("git/TIC'S/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
 source('../../mylibrary/RegresionMultiple.R')
 
 
@@ -67,8 +67,19 @@ shapiro.test(m1$residuals)
 ggplot(m1, aes(x=m1$fitted.values, y=m1$residuals)) +
   geom_point(alpha=0.7,color='blue',size=2) +
   labs(
-    title = 'Grafico Residuales vs Respuesta Predica',
     x = 'Juegos ganados',
     y = 'Residuales'
   ) +
   theme_minimal()
+
+
+extraer_datos_lm(m1)
+
+
+
+#model.response(model.frame(m1))
+#X = model.matrix(m1)[1:28,2:ncol(model.matrix(m1))]
+#list(colnames(X))
+
+res_vs_vars_plot(m1)
+
