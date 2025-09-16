@@ -20,7 +20,7 @@ extraer_datos_lm <- function(modelo) {
   X <- model.matrix(modelo)[1:length(y),2:ncol(model.matrix(modelo))]
   
   nombres_y <- names(mf)[1]
-  nombres_x <- colnames(X)
+  nombres_x <- colnames(mf)[2:ncol(mf)]
   
   return(list(
     y = y,
@@ -40,20 +40,32 @@ plot_y_vs_xvars = function(modelo) {
              
              "gray")
   n = length(Data$y)
+  p = length(x)
   colors = rep(colors, length.out = n)
   
   x_vars = x
   gg = list()
-  
-  for(i in 1:length((x_vars))){
+  print(p)
+  if (FALSE) {
+    print('if')
+    ggplot(data = Data, mapping = aes(x = Data$x_vars, y = Data$y)) +
+      geom_point(color = colors[i], size = 2) +
+      geom_smooth(method = "lm", se = FALSE, color = "black") +
+      theme_bw() +
+      theme(plot.title = element_text(hjust = 0.5))
+  }
+  else{
+  for(i in 1:p){
+    print('sym')
+    print(i)
     gg[[i]] = ggplot(data = Data, mapping = aes(x = !!sym(x_vars[i]), y = !!sym(y))) +
       geom_point(color = colors[i], size = 2) +
       geom_smooth(method = "lm", se = FALSE, color = "black") +
       theme_bw() +
       theme(plot.title = element_text(hjust = 0.5))
   }
-  do.call(grid.arrange, c(gg, list(ncol = min(n, 3))))
-}
+  do.call(grid.arrange, c(gg, list(ncol = min(p, 3))))
+}}
 
 anova_table = function(modelo){
   
@@ -286,6 +298,39 @@ intervalos_conf_media_y = function(X0, modelo){
   
   izq = y0 - tt * sqrt(var_y0)
   der = y0 + tt * sqrt(var_y0)
+  
+  interval_table = cbind(matrix(c(izq, der), ncol = 2))
+  colnames(interval_table) = c('izq', 'der')
+  rownames(interval_table) = 'y0'
+  
+  return(interval_table)
+}
+
+intervalos_pred_y = function(X0, modelo){
+  anov_t = anova_table(modelo)
+  
+  info = extraer_datos_lm(modelo)
+  Data = model.frame(modelo)
+  x = info$nombres_x
+  y = info$nombres_y
+  n = nrow(Data)
+  p = length(x)+1
+  X = cbind(1, as.matrix(Data[, x]))
+  X = matrix(X, nrow=n,ncol=p)
+  Y = matrix(Data$y)
+  betas = solve(t(X) %*% X) %*% t(X) %*% Y
+  cme = anov_t$'Cuadrados medios'[2]
+  
+  t_test = t0_test_values(modelo)
+  tt = t_test[3]
+  
+  X0 = matrix(c(1,X0), ncol = length(p))
+  #print(dim(t(X0)))
+  y0 = t(X0) %*% (betas)
+  var_y0 = cme * t(X0) %*% solve(t(X) %*% X) %*% X0
+  
+  izq = y0 - tt * sqrt(1 + var_y0)
+  der = y0 + tt * sqrt(1 + var_y0)
   
   interval_table = cbind(matrix(c(izq, der), ncol = 2))
   colnames(interval_table) = c('izq', 'der')
