@@ -263,12 +263,13 @@ intervalos_conf_beta = function(modelo){
   izq = betas-tt*sqrt(cme*Cii)
   der = betas+tt*sqrt(cme*Cii)
   
-  interval_table = cbind(matrix(ncol = p, nrow = 3))
+  interval_table = cbind(matrix(ncol = p, nrow = 4))
   colnames(interval_table) = c("Intercept", x)
-  interval_table[1,]= izq
-  interval_table[2,]= betas
-  interval_table[3,]= der
-  rownames(interval_table) = c('izq', 'beta_value', 'der')
+  interval_table[1,] = izq
+  interval_table[2,] = betas
+  interval_table[3,] = der
+  interval_table[4,] = der - izq
+  rownames(interval_table) = c('izq', 'beta_value', 'der', 'long')
   
   return(interval_table)
 }
@@ -298,9 +299,8 @@ intervalos_conf_media_y = function(X0, modelo){
   
   izq = y0 - tt * sqrt(var_y0)
   der = y0 + tt * sqrt(var_y0)
-  
-  interval_table = cbind(matrix(c(izq, der), ncol = 2))
-  colnames(interval_table) = c('izq', 'der')
+  interval_table = cbind(matrix(c(izq, der, der-izq), ncol = 3))
+  colnames(interval_table) = c('izq', 'der', 'long')
   rownames(interval_table) = 'y0'
   
   return(interval_table)
@@ -332,8 +332,8 @@ intervalos_pred_y = function(X0, modelo){
   izq = y0 - tt * sqrt(1 + var_y0)
   der = y0 + tt * sqrt(1 + var_y0)
   
-  interval_table = cbind(matrix(c(izq, der), ncol = 2))
-  colnames(interval_table) = c('izq', 'der')
+  interval_table = cbind(matrix(c(izq, der, der - izq), ncol = 3))
+  colnames(interval_table) = c('izq', 'der', 'long')
   rownames(interval_table) = 'y0'
   
   return(interval_table)

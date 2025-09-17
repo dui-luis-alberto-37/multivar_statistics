@@ -1,4 +1,4 @@
-setwd("Tic's/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
+setwd("git/TIC'S/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
 source('../../mylibrary/RegresionMultiple.R')
 datos = read.csv('../../data/Rendimiento_de_gasolina.csv')
 
@@ -32,6 +32,17 @@ intervalos_conf_media_y(c(255, 2),m1)
 intervalos_pred_y(c(255, 2),m1)
 
 #g)
-intervalos_conf_media_y(c(255, 2),m2)
+intervalos_conf_media_y(c(255),m2)
+intervalos_pred_y(c(255),m2)
 
-intervalos_pred_y(c(255, 2),m2)
+#h)
+qq_residuals(m1)
+qq_residuals(m2)
+
+#i)
+res_vs_fitt(m1)
+res_vs_fitt(m2)
+
+#j)
+res_vs_vars_plot(m1)
+res_vs_vars_plot(m2)
