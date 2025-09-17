@@ -12,13 +12,19 @@ t0_test_values(m1)
 anova(m1)
 anova_table(m1)
 anova(m1, m2)
-F0_test_values(m1)
+
 
 intervalos_conf_beta(m2)
-source('../../mylibrary/RegresionMultiple.R')
 intervalos_conf_media_y(c(225, 2), m1)
 intervalos_pred_y(c(225, 2), m1)
 intervalos_conf_media_y(c(225), m2)
 intervalos_pred_y(c(225), m2)
 anova(m1)
 anova_table(m1)
+
+
+m2 = lm('y ~ x1 + x2', datos)
+
+source('../../mylibrary/RegresionMultiple.R')
+F0_test_values(m1)
+summary(m1)

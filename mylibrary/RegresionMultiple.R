@@ -113,7 +113,7 @@ F0_test_values = function(modelo){
   F0
   df = anov_t$'Grados de libertad'
   
-  pvlue = pf(F0,df[2],df[1])
+  pvlue = 1 - pf(F0,df[1],df[2])
   pvlue
   
   alpha = 0.05
