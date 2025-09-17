@@ -25,6 +25,7 @@ anova_table(m1)
 
 m2 = lm('y ~ x1 + x2', datos)
 
-source('../../mylibrary/RegresionMultiple.R')
 F0_test_values(m1)
 summary(m1)
+source('../../mylibrary/RegresionMultiple.R')
+var_corr(m1)

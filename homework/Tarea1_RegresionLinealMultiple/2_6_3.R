@@ -1,4 +1,4 @@
-setwd("git/TIC'S/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
+setwd("Tic's/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
 source('../../mylibrary/RegresionMultiple.R')
 datos = read.csv('../../data/Precios_de_viviendas.csv')
 
@@ -15,3 +15,13 @@ summary(m1)
 #c)
 t0_test_values(m1)
 
+#d)
+R2_test(m1)
+
+#e)
+t0_test_values(m1)[,'x3']
+
+#f)
+var_corr(m1)
+
+#g)

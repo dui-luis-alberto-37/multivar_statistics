@@ -1,5 +1,6 @@
 library(ggplot2)
 library(gridExtra)
+library(corrplot)
 
 lm_coefficients = function(Data, y, x){
   n = length(Data$y)
@@ -337,4 +338,11 @@ intervalos_pred_y = function(X0, modelo){
   rownames(interval_table) = 'y0'
   
   return(interval_table)
+}
+
+var_corr = function(modelo){
+  info = extraer_datos_lm(modelo)
+  X = info$X
+  corr = cor(X,method = "pearson")
+  return(corrplot(corr))
 }
