@@ -3,11 +3,10 @@ library(gridExtra)
 library(corrplot)
 library(lmtest)
 lm_coefficients = function(Data, y, x){
-  n = length(Data$y)
+  n = length(Data[[y]])
   p = length(x)+1
   X <- cbind(1, as.matrix(Data[, x]))
-  X = matrix(X, nrow=n,ncol=p)
-  Y <- matrix(Data$y)
+  Y <- Data[[y]]
   beta <- solve(t(X) %*% X) %*% t(X) %*% Y
   beta = cbind(matrix(beta, nrow =1))
   colnames(beta) = c("Intercept", x)
@@ -18,9 +17,11 @@ extraer_datos_lm <- function(modelo) {
   
   mf <- model.frame(modelo)
   y <- model.response(mf)
+  
   X <- model.matrix(modelo)[1:length(y),2:ncol(model.matrix(modelo))]
   
   nombres_y <- names(mf)[1]
+
   nombres_x <- colnames(mf)[2:ncol(mf)]
   
   return(list(
@@ -40,7 +41,7 @@ plot_y_vs_xvars = function(modelo) {
   colors = c("red", "blue", "green","cyan", "magenta", "yellow", "black",
              
              "gray")
-  n = length(Data$y)
+  n = length(Data[[y]])
   p = length(x)
   colors = rep(colors, length.out = n)
   
@@ -49,7 +50,7 @@ plot_y_vs_xvars = function(modelo) {
   print(p)
   if (FALSE) {
     print('if')
-    ggplot(data = Data, mapping = aes(x = Data$x_vars, y = Data$y)) +
+    ggplot(data = Data, mapping = aes(x = Data$x_vars, y = Data[[y]])) +
       geom_point(color = colors[i], size = 2) +
       geom_smooth(method = "lm", se = FALSE, color = "black") +
       theme_bw() +
@@ -74,19 +75,22 @@ anova_table = function(modelo){
   info = extraer_datos_lm(modelo)
   y = info$nombre_y
   x = info$nombres_x
+  Y = info$y
+  X = info$X
   
-  n = length(Data$y)
+  n = length(Y)
   p = length(x)+1
-  X <- cbind(1, as.matrix(Data[, x]))
-  X = matrix(X, nrow=n,ncol=p)
-  Y <- matrix(Data$y)
+  
+  
+  X <- cbind(1, as.matrix(X))
+  
+  Y <- model.response(Data)
   beta <- solve(t(X) %*% X) %*% t(X) %*% Y
   
   anov = data.frame(
     'Fuente de Variación' = c('Regresión', 'Residuales', 'Total'),
     stringsAsFactors = FALSE
   )
-  
   scr = t(beta) %*% t(X) %*% Y - sum(Y)**2 / n
   sce = t(Y) %*% Y -  t(beta) %*% t(X) %*% Y
   sct = t(Y) %*% Y -  sum(Y)**2 / n
@@ -133,11 +137,12 @@ t0_test_values = function(modelo){
   y = info$nombre_y
   x = info$nombres_x
   
+  Y = info$y
+  X = info$X
+  
   n = length(Data$y)
   p = length(x)+1
   X <- cbind(1, as.matrix(Data[, x]))
-  X = matrix(X, nrow=n,ncol=p)
-  Y <- matrix(Data$y)
   beta <- solve(t(X) %*% X) %*% t(X) %*% Y
   C = solve(t(X) %*% X)
   Cii = matrix(nrow = p)
@@ -169,11 +174,11 @@ t0_test_values = function(modelo){
 }
 
 R2_test = function(modelo){
+
   anov_t = anova_table(modelo)
   scr = anov_t[1,'Suma de cuadrados']
   sct = anov_t[3,'Suma de cuadrados']
   R2 = (scr/sct)
-  
   cme = anov_t[2,'Cuadrados medios']
   cmt = anov_t[3,'Suma de cuadrados'] / anov_t[3,'Grados de libertad']
   R2_adj = (1 - (cme/cmt))
@@ -241,13 +246,13 @@ intervalos_conf_beta = function(modelo){
   Data = model.frame(modelo)
   x = info$nombres_x
   y = info$nombres_y
-  n = nrow(Data)
+  X = info$X
+  Y = info$y
+  n = length(Y)
   p = length(x)+1
   
   
-  X = cbind(1, as.matrix(Data[, x]))
-  X = matrix(X, nrow=n,ncol=p)
-  Y = matrix(Data$y)
+  X = cbind(1, as.matrix(X))
   
   C = solve(t(X) %*% X)
   Cii = matrix(nrow = p)
@@ -283,15 +288,13 @@ intervalos_conf_media_y = function(X0, modelo){
   info = extraer_datos_lm(modelo)
   Data = model.frame(modelo)
   x = info$nombres_x
-  y = info$nombres_y
+  y = info$nombre_y
   n = nrow(Data)
   p = length(x)+1
-  X = cbind(1, as.matrix(Data[, x]))
-  X = matrix(X, nrow=n,ncol=p)
-  Y = matrix(Data$y)
+  X = cbind(1, as.matrix(info$X))
+  Y = info$y
   betas = solve(t(X) %*% X) %*% t(X) %*% Y
   cme = anov_t$'Cuadrados medios'[2]
-  
   t_test = t0_test_values(modelo)
   tt = t_test[3]
   
@@ -315,12 +318,11 @@ intervalos_pred_y = function(X0, modelo){
   info = extraer_datos_lm(modelo)
   Data = model.frame(modelo)
   x = info$nombres_x
-  y = info$nombres_y
+  y = info$nombre_y
   n = nrow(Data)
   p = length(x)+1
-  X = cbind(1, as.matrix(Data[, x]))
-  X = matrix(X, nrow=n,ncol=p)
-  Y = matrix(Data$y)
+  X = cbind(1, as.matrix(info$X))
+  Y = info$y
   betas = solve(t(X) %*% X) %*% t(X) %*% Y
   cme = anov_t$'Cuadrados medios'[2]
   
