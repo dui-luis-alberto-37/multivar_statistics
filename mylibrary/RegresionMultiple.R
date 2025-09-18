@@ -1,7 +1,7 @@
 library(ggplot2)
 library(gridExtra)
 library(corrplot)
-
+library(lmtest)
 lm_coefficients = function(Data, y, x){
   n = length(Data$y)
   p = length(x)+1
@@ -196,7 +196,7 @@ qq_residuals = function(modelo){
 }
 
 res_vs_fitt = function(modelo){
-  ggplot(m1, aes(x=modelo$fitted.values, y=modelo$residuals)) +
+  g = ggplot(m1, aes(x=modelo$fitted.values, y=modelo$residuals)) +
     geom_point(alpha=0.7,color='blue',size=2) +
     geom_smooth(method = "lm", se = FALSE, color = "black") +
     labs(
@@ -204,6 +204,8 @@ res_vs_fitt = function(modelo){
       y = 'Residuales'
     ) +
     theme_minimal()
+  print(bptest(modelo))
+  return(g)
 }
 
 res_vs_vars_plot = function(modelo) {
