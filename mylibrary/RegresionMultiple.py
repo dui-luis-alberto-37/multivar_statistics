@@ -289,6 +289,38 @@ class LinearModel():
                                 'length': [right - left]})
         
         return df_ic
+    
+    def complete_summary(self, X0 = None, show = True):
+        print('Resultados del modelo 1:')
+        print('------------------------')
+        print('Parametros estimados:')
+        print(self.params, '\n')
+        print('Tabla ANOVA:')
+        print(self.anov_t, '\n')
+        print('¿El modelo es significativo?')
+        print(self.is_significant, '\n')
+        print('Resultado de la prueba F:')
+        print(self.Ftest(), '\n')
+        print('Resultado de la prueba t para cada parámetro:')
+        print(self.Ttest(), '\n')
+        print('R^2_values:')
+        print(self.R2_values(), '\n')
+        print('QQ plot de los residuales:')
+        print(self.qq_plot(show = show), '\n') #cambie show = True si quiere ver el grafico
+        print('Residuales contra valores ajustados:')
+        print(self.residuals_vs_fitted(show = show), '\n') #cambie show = True si quiere ver el grafico
+        print('Residuales contra cada variable predictora:')
+        print(self.residuals_vs_variables(show = show), '\n') #cambie show = True si quiere ver el grafico
+        print('Intervalos de 95% para los coeficientes de regresión:')
+        print(self.IC_params())
+        if X0:
+            print(f'Intervalos de 95% para la media de Y dado X = {X0}:')
+            print(self.IC_mean_y(X0))
+            print(f'Intervalos de 95% para la predicción de Y dado X = {X0}:')
+            print(self.IC_pred_y(X0))
+        
+        return None
+
 
 
 
