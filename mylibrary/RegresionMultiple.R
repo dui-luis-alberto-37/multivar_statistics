@@ -332,10 +332,10 @@ intervalos_pred_y = function(X0, modelo){
   X0 = matrix(c(1,X0), ncol = length(p))
   #print(dim(t(X0)))
   y0 = t(X0) %*% (betas)
-  var_y0 = cme * t(X0) %*% solve(t(X) %*% X) %*% X0
+  var_y0 = cme * (1 + t(X0) %*% solve(t(X) %*% X) %*% X0)
   
-  izq = y0 - tt * sqrt(1 + var_y0)
-  der = y0 + tt * sqrt(1 + var_y0)
+  izq = y0 - tt * sqrt(var_y0)
+  der = y0 + tt * sqrt(var_y0)
   
   interval_table = cbind(matrix(c(izq, der, der - izq), ncol = 3))
   colnames(interval_table) = c('izq', 'der', 'long')

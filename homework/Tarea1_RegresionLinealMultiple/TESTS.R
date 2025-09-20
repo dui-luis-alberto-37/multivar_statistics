@@ -29,3 +29,5 @@ F0_test_values(m1)
 summary(m1)
 source('../../mylibrary/RegresionMultiple.R')
 var_corr(m1)
+
+intervalos_pred_y(c(2300,56,2100), m1)
