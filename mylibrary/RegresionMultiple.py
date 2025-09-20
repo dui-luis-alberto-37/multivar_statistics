@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from scipy import stats 
+import seaborn as sns
 # import matplotlib
 # matplotlib.use('Agg') 
 
@@ -22,6 +23,10 @@ class LinearModel():
         self.Y = self.rawdata[y]
         
         self.n = len(self.Y)
+        if x == '.':
+            x = list(self.rawdata.columns)
+            x.remove(y)
+            
         self.p = len(x) + 1
         
         ones = np.ones((self.n,self.p))
@@ -321,6 +326,18 @@ class LinearModel():
         
         return None
 
-
+    def coorplot(self, show = True):
+        coor = self.rawdata[self.x_names].corr(method='pearson')
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(coor, 
+                    annot=True, 
+                    cmap='coolwarm_r', 
+                    center=0,
+                    square=True,
+                    vmax=1, vmin=-1)
+        if show:
+            plt.show()
+        plt.close()
+        return None
 
 

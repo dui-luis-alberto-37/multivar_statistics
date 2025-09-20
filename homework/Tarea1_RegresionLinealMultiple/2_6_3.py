@@ -1,0 +1,35 @@
+from importador import LinearModel
+
+# a)
+m1 = LinearModel('y', '.', 'Precios_de_viviendas.csv')
+print('Resultados del modelo 1:')
+print('------------------------')
+print('Parametros estimados:')
+print(m1.params, '\n')
+# b)
+print('¿El modelo es significativo?')
+print(m1.is_significant, '\n')
+print('Resultado de la prueba F:')
+print(m1.Ftest(), '\n')
+# c)
+print('Resultado de la prueba t para cada parámetro:')
+print(m1.Ttest(), '\n')
+# d)
+print('R^2_values:')
+print(m1.R2_values(), '\n')
+# e)
+print('Contribución del tamaño del lote y el espacio vital para el modelo, dado que se incluyeron todos los demás regresores:')
+print(m1.Ttest().loc['x3'], '\n') 
+#f)
+print('Coorrelación entre las variables predictoras:')
+print(m1.coorplot(show = False), '\n') #cambie show = True si quiere ver el grafico
+# g)
+print('QQ plot de los residuales:')
+print(m1.qq_plot(show = False), '\n') #cambie show = True si quiere ver el grafico
+# h)
+print('Residuales contra valores ajustados:')
+print(m1.residuals_vs_fitted(show = False), '\n') #cambie show = True si quiere ver el grafico
+# i)
+print('Residuales contra cada variable predictora:')
+print(m1.residuals_vs_variables(show = False), '\n') #cambie show = True si quiere ver el grafico
+print('-------------------------\n')
