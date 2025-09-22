@@ -3,6 +3,7 @@ library(gridExtra)
 library(corrplot)
 library(lmtest)
 library(olsrr)
+library(MASS)
 lm_coefficients = function(Data, y, x){
   n = length(Data[[y]])
   p = length(x)+1
@@ -363,5 +364,5 @@ backward_stepwise = function(modelo){
 }
 
 all_models_step = function(modelo){
-  return(ols_step_all_possible(modelo, details = T))
+  return(ols_step_both_aic(modelo, details = T))
 }
