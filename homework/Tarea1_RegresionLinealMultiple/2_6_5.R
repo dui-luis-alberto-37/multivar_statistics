@@ -6,12 +6,6 @@ m1 = lm(y~.-Equipo, datos)
 
 # a)
 fs = forward_stepwise(m1)
-fs
+bac
 
-# b)
-bs = backward_stepwise(m1)
-bs
-
-# c)
-as = all_models_step(m1)
-as
+summary(fs)

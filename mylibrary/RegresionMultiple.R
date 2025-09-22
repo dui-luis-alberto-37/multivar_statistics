@@ -2,6 +2,7 @@ library(ggplot2)
 library(gridExtra)
 library(corrplot)
 library(lmtest)
+library(olsrr)
 lm_coefficients = function(Data, y, x){
   n = length(Data[[y]])
   p = length(x)+1
@@ -349,4 +350,18 @@ var_corr = function(modelo){
   X = info$X
   corr = cor(X,method = "pearson")
   return(corrplot(corr))
+}
+
+forward_stepwise = function(modelo){
+  al = ols_step_forward_aic(modelo, details = T)
+  
+  return(plot(al))
+}
+
+backward_stepwise = function(modelo){
+  return(ols_step_backward_aic(modelo, details = T))
+}
+
+all_models_step = function(modelo){
+  return(ols_step_all_possible(modelo, details = T))
 }
