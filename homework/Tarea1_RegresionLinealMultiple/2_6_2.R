@@ -1,4 +1,5 @@
 setwd("git/TIC'S/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
+setwd("Tic's/5nto/multivar_statistics/homework/Tarea1_RegresionLinealMultiple/")
 source('../../mylibrary/RegresionMultiple.R')
 datos = read.csv('../../data/Rendimiento_de_gasolina.csv')
 
