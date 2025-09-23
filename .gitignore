@@ -228,7 +228,6 @@ __marimo__/
 *.md
 *.log
 *.aux
-*.pdf
 _cache/
 /inst/doc/
 
