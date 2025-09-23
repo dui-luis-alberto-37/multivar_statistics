@@ -5,6 +5,7 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from scipy import stats 
 import seaborn as sns
+from copy import deepcopy
 # import matplotlib
 # matplotlib.use('Agg') 
 
@@ -16,8 +17,8 @@ def read_data(name):
         return df
 
 class LinearModel():
-    def __init__(self, y, x, name):
-        
+    def __init__(self, y, x, name, minus = None):
+        self.name = name
         self.rawdata = read_data(name)
         
         self.Y = self.rawdata[y]
@@ -26,6 +27,12 @@ class LinearModel():
         if x == '.':
             x = list(self.rawdata.columns)
             x.remove(y)
+
+        if minus:
+            if type(minus) == str:
+                minus = [minus]
+            for m in minus:
+                x.remove(m)
             
         self.p = len(x) + 1
         
@@ -48,6 +55,7 @@ class LinearModel():
         self.is_significant = self.Ftest(call = False)
         
     def betas(self):
+        
         X = self.X
         Y = self.Y
         betas = np.linalg.inv(X.T@X)@X.T@Y
@@ -339,5 +347,85 @@ class LinearModel():
             plt.show()
         plt.close()
         return None
+    
+    def forward_stepwise(self, alpha=0.05):
+        selected = []
+        remaining = deepcopy(list(self.x_names))
+        best_score = float('inf')
+        while remaining:
+            best_candidate = None
+            for x in remaining:
+                model = LinearModel(self.y_name, selected + [x], self.name)
+                pvals = model.Ttest()['p_value']
+                min_pval = pvals[1:].min()
+                if min_pval < best_score:
+                    best_score = min_pval
+                    best_candidate = x
+            if best_score >= alpha:
+                break
+            if best_candidate is None:
+                break
+            selected.append(best_candidate)
+            remaining.remove(best_candidate)
+                
 
+            # scores_with_candidates = []
+            # for candidate in remaining:
+            #     pvals = self.Ttest()['p_value']
+            #     max_pval = pvals[1:].max()
+            #     scores_with_candidates.append((pvals[candidate], candidate))
+            #     print(scores_with_candidates)
+            # scores_with_candidates.sort()
+            # best_pval, best_candidate = scores_with_candidates[0]
+            # if best_pval < alpha:
+            #     selected.append(best_candidate)
+            #     remaining.remove(best_candidate)
+            # else:
+            #     break
+        return selected
+    
+    def backward_stepwise(self, alpha=0.05):
+        selected = deepcopy(list(self.x_names))
+        while len(selected) > 0:
+            model = LinearModel(self.y_name, selected, self.name)
+            pvals = model.Ttest()['p_value']
+            worst_pval = pvals[1:].max()
 
+            if worst_pval > alpha:
+                worst_var = pvals[1:].idxmax()
+                selected.remove(worst_var)
+            else:
+                break
+        return selected
+    
+    def both_stepwise(self, alpha=0.05):
+        selected = []
+        remaining = deepcopy(list(self.x_names))
+        while True:
+            # Forward step
+            changed = False
+            scores_with_candidates = []
+            for candidate in remaining:
+                    # print(selected, remaining)
+                model = LinearModel(self.y_name, selected + [candidate], self.name)
+                pvals = model.Ttest()['p_value']
+                max_pval = pvals[1:].max()
+                scores_with_candidates.append((max_pval, candidate))
+            scores_with_candidates.sort()
+            if scores_with_candidates and scores_with_candidates[0][0] < alpha:
+                best_candidate = scores_with_candidates[0][1]
+                selected.append(best_candidate)
+                remaining.remove(best_candidate)
+                changed = True
+            # Backward step
+            new_model = LinearModel(self.y_name, selected, self.name)
+            pvals = new_model.Ttest()['p_value']
+            worst_pval = pvals[1:].max()
+            if worst_pval > alpha:
+                worst_var = pvals[1:].idxmax()
+                selected.remove(worst_var)
+                remaining.append(worst_var)
+                changed = True
+            if not changed:
+                break
+        return selected
