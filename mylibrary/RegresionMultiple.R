@@ -4,6 +4,7 @@ library(corrplot)
 library(lmtest)
 library(olsrr)
 library(MASS)
+library(broom)
 lm_coefficients = function(Data, y, x){
   n = length(Data[[y]])
   p = length(x)+1
@@ -30,7 +31,8 @@ extraer_datos_lm <- function(modelo) {
     y = y,
     X = X,
     nombre_y = nombres_y,
-    nombres_x = nombres_x
+    nombres_x = nombres_x,
+    mf = mf
   ))
 }
 
@@ -191,19 +193,22 @@ R2_test = function(modelo){
 }
 
 qq_residuals = function(modelo){
+  info = extraer_datos_lm(modelo)
+  datos = info$mf
   gplot = ggplot(datos, aes(sample = modelo$residuals)) +
     stat_qq() +
     stat_qq_line(color = "red") +
     labs(x = "Cuantiles Teóricos",
          y = "Cuantiles Muestrales") +
     theme_minimal()
-  
   print(shapiro.test(modelo$residuals))
   return(gplot)
 }
 
 res_vs_fitt = function(modelo){
-  g = ggplot(m1, aes(x=modelo$fitted.values, y=modelo$residuals)) +
+  
+  
+  g = ggplot(modelo, aes(x=modelo$fitted.values, y=modelo$residuals)) +
     geom_point(alpha=0.7,color='blue',size=2) +
     geom_smooth(method = "lm", se = FALSE, color = "black") +
     labs(
@@ -346,10 +351,11 @@ intervalos_pred_y = function(X0, modelo){
   return(interval_table)
 }
 
-var_corr = function(modelo){
+var_corr = function(modelo, v = False){
   info = extraer_datos_lm(modelo)
   X = info$X
   corr = cor(X,method = "pearson")
+  if(v){print(corr)}
   return(corrplot(corr))
 }
 
@@ -365,4 +371,8 @@ backward_stepwise = function(modelo){
 
 all_models_step = function(modelo){
   return(ols_step_both_aic(modelo, details = T))
+}
+
+dw_test = function(modelo){
+  return(dwtest(modelo))
 }

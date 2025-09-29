@@ -31,5 +31,5 @@ print('Residuales contra valores ajustados:')
 print(m1.residuals_vs_fitted(show = False), '\n') #cambie show = True si quiere ver el grafico
 # i)
 print('Residuales contra cada variable predictora:')
-print(m1.residuals_vs_variables(show = False), '\n') #cambie show = True si quiere ver el grafico
+print(m1.residuals_vs_variables(show = False), '\n') #cambie show = True si quiere ver el graficos
 print('-------------------------\n')
