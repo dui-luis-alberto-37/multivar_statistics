@@ -73,46 +73,79 @@ plot_y_vs_xvars = function(modelo) {
   do.call(grid.arrange, c(gg, list(ncol = min(p, 3))))
 }}
 
-anova_table = function(modelo){
+anova_table = function(modelo, modelo2 = NULL){
   
-  Data = model.frame(modelo)
-  info = extraer_datos_lm(modelo)
-  y = info$nombre_y
-  x = info$nombres_x
-  Y = info$y
-  X = info$X
+  if(is.null(modelo2)){
+    
+    Data = model.frame(modelo)
+    info = extraer_datos_lm(modelo)
+    y = info$nombre_y
+    x = info$nombres_x
+    Y = info$y
+    X = info$X
+    
+    n = length(Y)
+    p = length(x)+1
+    
+    
+    X <- cbind(1, as.matrix(X))
+    
+    Y <- model.response(Data)
+    beta <- solve(t(X) %*% X) %*% t(X) %*% Y
+    
+    anov = data.frame(
+      'Fuente de Variación' = c('Regresión', 'Residuales', 'Total'),
+      stringsAsFactors = FALSE
+    )
+    scr = t(beta) %*% t(X) %*% Y - sum(Y)**2 / n
+    sce = t(Y) %*% Y -  t(beta) %*% t(X) %*% Y
+    sct = t(Y) %*% Y -  sum(Y)**2 / n
+    anov$'Suma de cuadrados' = c(scr,sce,sct)
+    
+    glr = p - 1
+    gle = n - p
+    glt = n - 1
+    anov$'Grados de libertad' = c(glr, gle, glt)
+    
+    cmr = scr/glr
+    cme = sce/gle
+    anov[1, 'Cuadrados medios'] = cmr
+    anov[2, 'Cuadrados medios'] = cme
+    
+    f0 = cmr/cme
+    anov[1, 'F_0'] = f0
+    return(anov)
+  }
+  else{
+    anov_0 = anova_table(modelo)
+    anov_1 = anova_table(modelo2)
+    RSC1 = anov_1$`Suma de cuadrados`[2]
+    RSC0 = anov_0$`Suma de cuadrados`[2]
+    if(RSC0 < RSC1){
+      k = anov_1
+      anov_1 = anov_0
+      anov_0 = k
+      print('hola')
+      RSC1 = anov_1$`Suma de cuadrados`[2]
+      RSC0 = anov_0$`Suma de cuadrados`[2]
+    }
+    glr_0 = anov_0$`Grados de libertad`[2]
+    glr_1 = anov_1$`Grados de libertad`[2]
+    print(anov_1)
+    anov = data.frame(
+      'Modelo' = c('Completo', 'Incompleto'),
+      stringsAsFactors = FALSE
+    )
+    anov$'GL' = c(glr_0, glr_1)
+    anov$'RSC' = c(RSC0, RSC1)
+    anov[2, 'GL'] = glr_0-glr_1
+    anov[2, 'Suma de Cuadrados'] = RSC0 - RSC1
+    anov[2, 'F value'] = ((RSC0 - RSC1)/(glr_0-glr_1))/(RSC1/glr_1)
+    anov[2, 'pval'] = 1 - pf(anov[2, 'F value'], glr_0-glr_1, glr_1)
+    
+    return(anov)
+  }
   
-  n = length(Y)
-  p = length(x)+1
-  
-  
-  X <- cbind(1, as.matrix(X))
-  
-  Y <- model.response(Data)
-  beta <- solve(t(X) %*% X) %*% t(X) %*% Y
-  
-  anov = data.frame(
-    'Fuente de Variación' = c('Regresión', 'Residuales', 'Total'),
-    stringsAsFactors = FALSE
-  )
-  scr = t(beta) %*% t(X) %*% Y - sum(Y)**2 / n
-  sce = t(Y) %*% Y -  t(beta) %*% t(X) %*% Y
-  sct = t(Y) %*% Y -  sum(Y)**2 / n
-  anov$'Suma de cuadrados' = c(scr,sce,sct)
-  
-  glr = p - 1
-  gle = n - p
-  glt = n - 1
-  anov$'Grados de libertad' = c(glr, gle, glt)
-  
-  cmr = scr/glr
-  cme = sce/gle
-  anov[1, 'Cuadrados medios'] = cmr
-  anov[2, 'Cuadrados medios'] = cme
-  
-  f0 = cmr/cme
-  anov[1, 'F_0'] = f0
-  return(anov)
 }
 
 F0_test_values = function(modelo){

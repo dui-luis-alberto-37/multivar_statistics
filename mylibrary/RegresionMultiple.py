@@ -16,6 +16,9 @@ def read_data(name):
         df = pd.read_csv(path)
         return df
 
+def anova_between_lm(lm_1, lm_2):
+    anov_1 = lm_1.an
+
 class LinearModel():
     def __init__(self, y, x, name, minus = None):
         self.name = name
