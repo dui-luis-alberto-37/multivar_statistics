@@ -10,21 +10,43 @@ from copy import deepcopy
 # matplotlib.use('Agg') 
 
 
-def read_data(name):
+def read_data(name, test = False):
+    if type(name) == pd.DataFrame:
+        for col in ['Girth', 'Height', 'Volume']:
+            name[col] = pd.to_numeric(name[col])
+        return name
     path = './data/' + name
+    if test: path = '.' + path
     if path[-3:] == 'csv':
         df = pd.read_csv(path)
-        return df
+    elif path[-4:] == 'xlsx':
+        df = pd.read_excel(path)
+    return df
 
-def anova_between_lm(lm_1, lm_2):
-    anov_1 = lm_1.an
+def anova_between_lm(lm_0, lm_1):
+    if lm_0.p > lm_1.p:
+        lm_0, lm_1 = lm_1, lm_0
+    scr_0 = lm_0.SC['E']
+    scr_1 = lm_1.SC['E']
+    glr_0 = lm_0.GL['E']
+    glr_1 = lm_1.GL['E']
+    F_0 = ((scr_0 - scr_1)/(glr_0 - glr_1)) / (scr_1/glr_1)
+    df = {'Modelo': ['Completo', 'Reducido'],
+            'Grados de libertad': [glr_0, glr_1],
+            'Suma de cuadrados': [scr_0, scr_1],
+            'Suma de Cuadrados': [pd.NA, scr_0 - scr_1],
+            'F_0': [pd.NA, F_0],
+            'p_value': [pd.NA, 1 - stats.f.cdf(F_0, glr_0 - glr_1, glr_1)]
+            }
+    return pd.DataFrame(df)
 
 class LinearModel():
     def __init__(self, y, x, name, minus = None):
         self.name = name
-        self.rawdata = read_data(name)
+        df = deepcopy(read_data(name))
+        self.rawdata = df
         
-        self.Y = self.rawdata[y]
+        self.Y = np.array(self.rawdata[y])
         
         self.n = len(self.Y)
         if x == '.':
@@ -41,14 +63,13 @@ class LinearModel():
         
         ones = np.ones((self.n,self.p))
         ones[:,1:] = self.rawdata[x]
-        self.X = ones
+        self.X = np.array(ones)
         
         self.y_name = y
         self.x_names = x
-        
         betas = self.betas()
         self.params = betas
-        self.fitted_values = self.X@self.betas
+        self.fitted_values = self.X@self.betas_
         self.residuals = self.Y - self.fitted_values
         anov_t = self.anova_table()
         self.anov_t = anov_t
@@ -61,20 +82,21 @@ class LinearModel():
         
         X = self.X
         Y = self.Y
+        
         betas = np.linalg.inv(X.T@X)@X.T@Y
         df_betas = {'Intercept' : [betas[0]]}
         
         for i, x in enumerate(self.x_names, 1):
             df_betas[x] = [betas[i]]
             
-        self.betas = betas
+        self.betas_ = betas
 
         return pd.DataFrame(df_betas)
     
     def anova_table(self):
         df_anova = {'Fuente de variación' : ['Regresión', 'Residuales', 'Total']}
         
-        betas = self.betas
+        betas = self.betas_
         Y = self.Y
         X = self.X
         n = self.n
