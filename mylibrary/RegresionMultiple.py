@@ -146,7 +146,7 @@ class LinearModel():
             print([models[i+1].SC['R']/models[i+1].GL['R'] for i in range(len(models)-1)])
             F0_parcial = [(sc_parcial[i]/gl_parcial[i]) / (self.SC['E']/self.GL['E']) for i in range(len(cm_parcial))]
             print(F0_parcial)
-            p_value_parcial = [pd.NA] + [1 - stats.f.cdf(F0_parcial[i], gl_parcial[i], models[i].GL['E']) for i in range(1, len(F0_parcial))]
+            p_value_parcial = [1 - stats.f.cdf(F0_parcial[i], gl_parcial[i], models[i].GL['E']) for i in range(len(F0_parcial))]
 
             anov_parcial = {'Fuente de variación' : self.x_names,
                             'Suma de cuadrados' : sc_parcial,
