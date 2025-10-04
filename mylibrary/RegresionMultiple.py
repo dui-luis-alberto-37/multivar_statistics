@@ -12,7 +12,7 @@ from copy import deepcopy
 
 def read_data(name, test = False):
     if type(name) == pd.DataFrame:
-        for col in ['Girth', 'Height', 'Volume']:
+        for col in name.columns:
             name[col] = pd.to_numeric(name[col])
         return name
     path = './data/' + name
@@ -151,7 +151,7 @@ class LinearModel():
         return p_value < 0.05
 
     def Ttest(self, call = True):
-        betas = self.betas
+        betas = self.betas_
         Y = self.Y
         X = self.X
         n = self.n
@@ -266,7 +266,7 @@ class LinearModel():
         return bp_tests
 
     def IC_params(self):
-        betas = self.betas
+        betas = self.betas_
         X = self.X
 
         var_e = self.CM['E']
@@ -287,7 +287,7 @@ class LinearModel():
             raise ValueError(f'X0 debe tener {self.p - 1} elementos.')
         
         X0 = np.array([1] + X0)
-        betas = self.betas
+        betas = self.betas_
         Y0 = X0 @ betas
 
         var_e = self.CM['E']
@@ -310,7 +310,7 @@ class LinearModel():
             raise ValueError(f'X0 debe tener {self.p - 1} elementos.')
         
         X0 = np.array([1] + X0)
-        betas = self.betas
+        betas = self.betas_
         Y0 = X0 @ betas
 
         var_e = self.CM['E']
