@@ -56,3 +56,9 @@ a0
 anova(mc)
 mv = lm('Infarc ~ 1', datos)
 res_vs_vars_plot(mv)
+
+
+anova_table(mv)
+m1 = lm('Infarc ~ Area', datos)
+anova_table(m1)
+m2 = lm('Infarc ~ Area + X2', datos)

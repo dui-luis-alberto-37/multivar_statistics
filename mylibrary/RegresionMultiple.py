@@ -41,7 +41,8 @@ def anova_between_lm(lm_0, lm_1):
     return pd.DataFrame(df)
 
 class LinearModel():
-    def __init__(self, y, x, name, minus = None):
+    def __init__(self, y, x, name, minus = None, from_inside = False):
+        self.from_inside = from_inside
         self.name = name
         df = deepcopy(read_data(name))
         self.rawdata = df
@@ -71,12 +72,11 @@ class LinearModel():
         self.params = betas
         self.fitted_values = self.X@self.betas_
         self.residuals = self.Y - self.fitted_values
-        anov_t = self.anova_table()
+        anov_t = self.anova_table(from_inside = from_inside)
         self.anov_t = anov_t
 
         self.t_critical = stats.t.ppf(0.975, self.GL['E'])
 
-        self.is_significant = self.Ftest(call = False)
         
     def betas(self):
         
@@ -93,9 +93,8 @@ class LinearModel():
 
         return pd.DataFrame(df_betas)
     
-    def anova_table(self):
+    def anova_table(self, from_inside = True):
         df_anova = {'Fuente de variación' : ['Regresión', 'Residuales', 'Total']}
-        print(self.x_names + ['Regresión', 'Residuales', 'Total'])
         betas = self.betas_
         Y = self.Y
         X = self.X
@@ -110,31 +109,54 @@ class LinearModel():
                     'E': sce,
                     'T': SCT}
         
-        df_anova['Suma de cuadrados'] = self.SC.values()
-        
-        # models = [LinearModel(self.y_name, [x], self.name) for x in self.x_names]
-        
-        
+        df_anova['Suma de cuadrados'] = self.SC.values()        
         
         self.GL =  {'R': p-1,
                     'E': n-p,
                     'T': n-1}
         
         df_anova['Grados de libertad'] = self.GL.values()
-        
-        self.CM = {k:self.SC[k]/self.GL[k] for k in ('R','E','T')}
+
+        if self.GL['R'] == 0:
+            self.CM = {'R': pd.NA, 'E': self.SC['E']/self.GL['E'], 'T': pd.NA}
+            F0 = [pd.NA, pd.NA, pd.NA]
+            pvalue = pd.NA
+        else:
+            self.CM = {k:self.SC[k]/self.GL[k] for k in ('R','E','T')}
+            F0 = self.CM['R']/self.CM['E']
+            pvalue = 1 - stats.f.cdf(F0, self.GL['R'], self.GL['E'])
+            F0 = [F0, pd.NA, pd.NA]
         
         df_anova['Cuadrados medios'] = self.CM.values()
         
-        F0 = self.CM['R']/self.CM['E']
+        df_anova['F_0'] = F0
         
-        df_anova['F_0'] = [F0, pd.NA, pd.NA]
-        
-        df_anova['p_value'] = [1 - stats.f.cdf(F0, self.GL['R'], self.GL['E']), pd.NA, pd.NA]
+        df_anova['p_value'] = [pvalue, pd.NA, pd.NA]
 
         self.F0 = F0
         
         df_anova = pd.DataFrame(df_anova)
+        
+        if not from_inside:
+            models = [LinearModel(self.y_name, self.x_names[0:i], self.name, from_inside=True) for i in range(self.p)]
+            sc_parcial = [-models[i].SC['R'] + models[i+1].SC['R'] for i in range(len(models)-1)]
+            gl_parcial = [-models[i].GL['R'] + models[i+1].GL['R'] for i in range(len(models)-1)]
+            cm_parcial = [sc_parcial[i]/gl_parcial[i] for i in range(len(sc_parcial))]
+            print([sc_parcial[i]/gl_parcial[i] for i in range(len(sc_parcial))])
+            print([models[i+1].SC['R']/models[i+1].GL['R'] for i in range(len(models)-1)])
+            F0_parcial = [(sc_parcial[i]/gl_parcial[i]) / (self.SC['E']/self.GL['E']) for i in range(len(cm_parcial))]
+            print(F0_parcial)
+            p_value_parcial = [pd.NA] + [1 - stats.f.cdf(F0_parcial[i], gl_parcial[i], models[i].GL['E']) for i in range(1, len(F0_parcial))]
+
+            anov_parcial = {'Fuente de variación' : self.x_names,
+                            'Suma de cuadrados' : sc_parcial,
+                            'Grados de libertad' : gl_parcial,
+                            'Cuadrados medios' : cm_parcial,
+                            'F_0' : F0_parcial,
+                            'p_value' : p_value_parcial}
+            
+            anov_parcial = pd.DataFrame(anov_parcial)
+            df_anova = pd.concat([anov_parcial, df_anova], ignore_index=True)
         
         return df_anova
     

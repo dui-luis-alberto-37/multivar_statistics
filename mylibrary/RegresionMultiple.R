@@ -110,7 +110,45 @@ anova_table = function(modelo, modelo2 = NULL){
     f0 = cmr/cme
     anov[1, 'F_0'] = f0
     
-    return(anov)
+    if(p == 0){
+      return(anov)
+    }
+    
+    modelos = list()
+    modelos[[1]] <- lm(as.formula(paste(y,"~1")), data = Data)  # modelo nulo
+    for(i in seq_along(x)){
+      print(seq_along(x))
+      modelos[[i+1]] <- lm(as.formula(paste(y,"~", paste(x[1:i], collapse="+"))), data = Data)
+    }
+    
+    sc_type1 = numeric(length(x))
+    gl_type1 = numeric(length(x))
+    fvals = numeric(length(x))
+    pvals = numeric(length(x))
+    
+    for(i in seq_along(x)){
+      rss0 = sum(residuals(modelos[[i]])^2)
+      rss1 = sum(residuals(modelos[[i+1]])^2)
+      sc_type1[i] = rss0 - rss1
+      gl_type1[i] = modelos[[i]]$df.residual - modelos[[i+1]]$df.residual
+      fvals[i] = (sc_type1[i]/gl_type1[i]) / (rss1/modelos[[i+1]]$df.residual)
+      pvals[i] = 1 - pf(fvals[i], gl_type1[i], modelos[[i+1]]$df.residual)
+    }
+    
+    anov_parcial = data.frame(
+      Variable = x,
+      "Suma de cuadrados" = sc_type1,
+      "gl" = gl_type1,
+      "F value" = fvals,
+      "Pr(>F)" = pvals,
+      stringsAsFactors = FALSE
+    )
+    
+    return(list(
+      ANOVA_global = anov,
+      ANOVA_parcial = anov_parcial
+    ))
+    
   }
   else{
     anov_0 = anova_table(modelo)
