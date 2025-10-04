@@ -21,8 +21,7 @@ extraer_datos_lm <- function(modelo) {
   mf <- model.frame(modelo)
   y <- model.response(mf)
   
-  X <- model.matrix(modelo)[1:length(y),2:ncol(model.matrix(modelo))]
-  
+  X = model.matrix(modelo)
   nombres_y <- names(mf)[1]
 
   nombres_x <- colnames(mf)[2:ncol(mf)]
@@ -30,6 +29,7 @@ extraer_datos_lm <- function(modelo) {
   return(list(
     y = y,
     X = X,
+    p = ncol(X) - 1,
     nombre_y = nombres_y,
     nombres_x = nombres_x,
     mf = mf
@@ -37,8 +37,8 @@ extraer_datos_lm <- function(modelo) {
 }
 
 plot_y_vs_xvars = function(modelo) {
-  Data = model.frame(modelo)
   info = extraer_datos_lm(modelo)
+  Data = info$mf
   y = info$nombre_y
   x = info$nombres_x
   
@@ -46,32 +46,31 @@ plot_y_vs_xvars = function(modelo) {
              
              "gray")
   n = length(Data[[y]])
-  p = length(x)
+  p = info$p
   colors = rep(colors, length.out = n)
   
-  x_vars = x
+  
   gg = list()
-  print(p)
-  if (FALSE) {
-    print('if')
-    ggplot(data = Data, mapping = aes(x = Data$x_vars, y = Data[[y]])) +
-      geom_point(color = colors[i], size = 2) +
-      geom_smooth(method = "lm", se = FALSE, color = "black") +
-      theme_bw() +
-      theme(plot.title = element_text(hjust = 0.5))
+  if(p == 0){
+    gg[[1]] = ggplot(Data, aes(x = 1:n, y = !!sym(y))) +
+      geom_point() +                
+      geom_hline(yintercept = modelo$coefficients,   
+                 color = "red",
+                 linetype = "dashed",
+                 linewidth = 1)
+    return(gg[[1]])
   }
   else{
-  for(i in 1:p){
-    print('sym')
-    print(i)
-    gg[[i]] = ggplot(data = Data, mapping = aes(x = !!sym(x_vars[i]), y = !!sym(y))) +
-      geom_point(color = colors[i], size = 2) +
-      geom_smooth(method = "lm", se = FALSE, color = "black") +
-      theme_bw() +
-      theme(plot.title = element_text(hjust = 0.5))
+    for(i in 1:p){
+      gg[[i]] = ggplot(data = Data, mapping = aes(x = !!sym(x[i]), y = !!sym(y))) +
+        geom_point(color = colors[i], size = 2) +
+        geom_smooth(method = "lm", se = FALSE, color = "black") +
+        theme_bw() +
+        theme(plot.title = element_text(hjust = 0.5))
+    }
+    do.call(grid.arrange, c(gg, list(ncol = min(p, 3))))
   }
-  do.call(grid.arrange, c(gg, list(ncol = min(p, 3))))
-}}
+}
 
 anova_table = function(modelo, modelo2 = NULL){
   
@@ -85,12 +84,8 @@ anova_table = function(modelo, modelo2 = NULL){
     X = info$X
     
     n = length(Y)
-    p = length(x)+1
+    p = info$p
     
-    
-    X <- cbind(1, as.matrix(X))
-    
-    Y <- model.response(Data)
     beta <- solve(t(X) %*% X) %*% t(X) %*% Y
     
     anov = data.frame(
@@ -102,8 +97,8 @@ anova_table = function(modelo, modelo2 = NULL){
     sct = t(Y) %*% Y -  sum(Y)**2 / n
     anov$'Suma de cuadrados' = c(scr,sce,sct)
     
-    glr = p - 1
-    gle = n - p
+    glr = p
+    gle = n - p - 1
     glt = n - 1
     anov$'Grados de libertad' = c(glr, gle, glt)
     
@@ -125,23 +120,21 @@ anova_table = function(modelo, modelo2 = NULL){
       k = anov_1
       anov_1 = anov_0
       anov_0 = k
-      print('hola')
       RSC1 = anov_1$`Suma de cuadrados`[2]
       RSC0 = anov_0$`Suma de cuadrados`[2]
     }
     glr_0 = anov_0$`Grados de libertad`[2]
     glr_1 = anov_1$`Grados de libertad`[2]
-    print(anov_1)
     anov = data.frame(
       'Modelo' = c('Completo', 'Incompleto'),
       stringsAsFactors = FALSE
     )
-    anov$'GL' = c(glr_0, glr_1)
+    anov$'RES_GL' = c(glr_0, glr_1)
     anov$'RSC' = c(RSC0, RSC1)
     anov[2, 'GL'] = glr_0-glr_1
     anov[2, 'Suma de Cuadrados'] = RSC0 - RSC1
     anov[2, 'F value'] = ((RSC0 - RSC1)/(glr_0-glr_1))/(RSC1/glr_1)
-    anov[2, 'pval'] = 1 - pf(anov[2, 'F value'], glr_0-glr_1, glr_1)
+    anov[2, 'pval'] = 1 - pf(anov[2, 'F value'], glr_0-glr_1, glr_1, lower.tail = T)
     
     return(anov)
   }
@@ -149,6 +142,9 @@ anova_table = function(modelo, modelo2 = NULL){
 }
 
 F0_test_values = function(modelo){
+  if(extraer_datos_lm(modelo)$p == 0){
+    return('No se puede aplicar la prueba F a un modelo sin al menos una variable predictora')
+  }
   anov_t = anova_table(modelo)
   anov_t
   F0 = anov_t[1,'F_0']
@@ -169,8 +165,8 @@ F0_test_values = function(modelo){
 
 t0_test_values = function(modelo){
   
-  Data = model.frame(modelo)
   info = extraer_datos_lm(modelo)
+  Data = info$mf
   y = info$nombre_y
   x = info$nombres_x
   
@@ -178,15 +174,13 @@ t0_test_values = function(modelo){
   X = info$X
   
   n = length(Data$y)
-  p = length(x)+1
-  X <- cbind(1, as.matrix(Data[, x]))
+  p = info$p + 1
   beta <- solve(t(X) %*% X) %*% t(X) %*% Y
   C = solve(t(X) %*% X)
   Cii = matrix(nrow = p)
   for(i in 1:p){
     Cii[i,1] = C[i,i]
   }
-  
   anov_t = anova_table(modelo)
   cme = anov_t$'Cuadrados medios'[2]
   
@@ -199,14 +193,16 @@ t0_test_values = function(modelo){
   tt = qt(1 - alpha/2, df[2], lower.tail = TRUE)
   
   t_values_table = cbind(matrix(ncol = p ,nrow = 3))
-  colnames(t_values_table) = c('Intercept', x)
-  
+  if(p ==1){
+    colnames(t_values_table) = c('Intercept')
+  }
+  else{
+    colnames(t_values_table) = c('Intercept', x)
+  }
   t_values_table[1,] = t0
   t_values_table[2,] = p_values
   t_values_table[3,] = rep(tt,length.out = p)
-  
   rownames(t_values_table) = c('t0', 'p-value', 'tt')
-  
   return(t_values_table)
 }
 
@@ -249,6 +245,10 @@ res_vs_fitt = function(modelo){
       y = 'Residuales'
     ) +
     theme_minimal()
+  if(extraer_datos_lm(modelo)$p == 0){
+    print('No se puede hacer el Breusch-Pagan test, faltan variables de regresión')
+    return(g)
+  }
   print(bptest(modelo))
   return(g)
 }
@@ -265,6 +265,9 @@ res_vs_vars_plot = function(modelo) {
   colors = rep(colors, length.out = n)
   
   x_vars = info$nombres_x
+  if(ncol(info$X) == 1){
+    return('No se puede plotear variables vs residuales por falta de variables')
+  }
   gg = list()
   
   Data = model.frame(modelo)
@@ -283,16 +286,14 @@ intervalos_conf_beta = function(modelo){
   anov_t = anova_table(modelo)
   
   info = extraer_datos_lm(modelo)
-  Data = model.frame(modelo)
+  Data = info$mf
   x = info$nombres_x
   y = info$nombres_y
   X = info$X
   Y = info$y
   n = length(Y)
-  p = length(x)+1
+  p = info$p + 1
   
-  
-  X = cbind(1, as.matrix(X))
   
   C = solve(t(X) %*% X)
   Cii = matrix(nrow = p)
@@ -301,6 +302,7 @@ intervalos_conf_beta = function(modelo){
   }
   
   t_test = t0_test_values(modelo)
+  
   tt = t_test[3,]
   
   betas = solve(t(X) %*% X) %*% t(X) %*% Y
@@ -310,9 +312,15 @@ intervalos_conf_beta = function(modelo){
   
   izq = betas-tt*sqrt(cme*Cii)
   der = betas+tt*sqrt(cme*Cii)
-  
   interval_table = cbind(matrix(ncol = p, nrow = 4))
-  colnames(interval_table) = c("Intercept", x)
+  
+  if(p ==1){
+    colnames(interval_table) = c('Intercept')
+  }
+  else{
+    colnames(interval_table) = c('Intercept', x)
+  }
+  
   interval_table[1,] = izq
   interval_table[2,] = betas
   interval_table[3,] = der
@@ -326,12 +334,12 @@ intervalos_conf_media_y = function(X0, modelo){
   anov_t = anova_table(modelo)
   
   info = extraer_datos_lm(modelo)
-  Data = model.frame(modelo)
+  Data = info$mf
   x = info$nombres_x
   y = info$nombre_y
   n = nrow(Data)
-  p = length(x)+1
-  X = cbind(1, as.matrix(info$X))
+  p = info$p +1
+  X = info$X
   Y = info$y
   betas = solve(t(X) %*% X) %*% t(X) %*% Y
   cme = anov_t$'Cuadrados medios'[2]
@@ -339,10 +347,10 @@ intervalos_conf_media_y = function(X0, modelo){
   tt = t_test[3]
   
   X0 = matrix(c(1,X0), ncol = length(p))
-  #print(dim(t(X0)))
-  y0 = t(X0) %*% (betas)
-  var_y0 = cme * t(X0) %*% solve(t(X) %*% X) %*% X0
   
+  y0 =  t(X0) %*% betas
+  var_y0 = cme * t(X0) %*% solve(t(X) %*% X) %*% X0
+
   izq = y0 - tt * sqrt(var_y0)
   der = y0 + tt * sqrt(var_y0)
   interval_table = cbind(matrix(c(izq, der, der-izq), ncol = 3))
@@ -356,12 +364,12 @@ intervalos_pred_y = function(X0, modelo){
   anov_t = anova_table(modelo)
   
   info = extraer_datos_lm(modelo)
-  Data = model.frame(modelo)
+  Data = info$mf
   x = info$nombres_x
   y = info$nombre_y
   n = nrow(Data)
-  p = length(x)+1
-  X = cbind(1, as.matrix(info$X))
+  p = info$p+1
+  X = info$X
   Y = info$y
   betas = solve(t(X) %*% X) %*% t(X) %*% Y
   cme = anov_t$'Cuadrados medios'[2]
@@ -370,7 +378,7 @@ intervalos_pred_y = function(X0, modelo){
   tt = t_test[3]
   
   X0 = matrix(c(1,X0), ncol = length(p))
-  #print(dim(t(X0)))
+  
   y0 = t(X0) %*% (betas)
   var_y0 = cme * (1 + t(X0) %*% solve(t(X) %*% X) %*% X0)
   
@@ -384,7 +392,7 @@ intervalos_pred_y = function(X0, modelo){
   return(interval_table)
 }
 
-var_corr = function(modelo, v = False){
+var_corr = function(modelo, v = FALSE){
   info = extraer_datos_lm(modelo)
   X = info$X
   corr = cor(X,method = "pearson")
