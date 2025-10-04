@@ -109,6 +109,7 @@ anova_table = function(modelo, modelo2 = NULL){
     
     f0 = cmr/cme
     anov[1, 'F_0'] = f0
+    
     return(anov)
   }
   else{

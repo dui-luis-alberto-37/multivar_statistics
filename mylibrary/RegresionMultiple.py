@@ -95,7 +95,7 @@ class LinearModel():
     
     def anova_table(self):
         df_anova = {'Fuente de variación' : ['Regresión', 'Residuales', 'Total']}
-        
+        print(self.x_names + ['Regresión', 'Residuales', 'Total'])
         betas = self.betas_
         Y = self.Y
         X = self.X
@@ -112,6 +112,10 @@ class LinearModel():
         
         df_anova['Suma de cuadrados'] = self.SC.values()
         
+        # models = [LinearModel(self.y_name, [x], self.name) for x in self.x_names]
+        
+        
+        
         self.GL =  {'R': p-1,
                     'E': n-p,
                     'T': n-1}
@@ -125,6 +129,8 @@ class LinearModel():
         F0 = self.CM['R']/self.CM['E']
         
         df_anova['F_0'] = [F0, pd.NA, pd.NA]
+        
+        df_anova['p_value'] = [1 - stats.f.cdf(F0, self.GL['R'], self.GL['E']), pd.NA, pd.NA]
 
         self.F0 = F0
         
@@ -141,14 +147,13 @@ class LinearModel():
         
         f_critical = stats.f.ppf(0.95, glr, gle)
 
-        if call:
-            df_result = pd.DataFrame({'F0': [F0],
-                                    'p_value': [p_value],
-                                    'f_critical': [f_critical],
-                                    'is_significant': [p_value < 0.05]})
-            print(df_result)
         
-        return p_value < 0.05
+        df_result = pd.DataFrame({'F0': [F0],
+                                'p_value': [p_value],
+                                'f_critical': [f_critical],
+                                'is_significant': [p_value < 0.05]})
+        
+        return df_result
 
     def Ttest(self, call = True):
         betas = self.betas_
@@ -208,6 +213,8 @@ class LinearModel():
         return df_result
     
     def residuals_vs_fitted(self, show = True):
+        if self.x_names == []:
+            return 'No hay variables predictoras en el modelo.'
         plt.scatter(self.fitted_values, self.residuals)
         plt.axhline(0, color ='red', linestyle ='--')
         plt.xlabel('Fitted values')
@@ -233,6 +240,9 @@ class LinearModel():
         return df_breusch
 
     def residuals_vs_variables(self, show = True):
+        if self.x_names == []:
+            return 'No hay variables predictoras en el modelo.'
+        
         n_vars = len(self.x_names)
         n_cols = 2
         n_rows = (n_vars + 1) // n_cols
