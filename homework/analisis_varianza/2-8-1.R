@@ -1,4 +1,4 @@
-setwd("Tic's/5nto/multivar_statistics/homework/analisis_varianza/")
+setwd("git/tics/5nto/multivar_statistics/homework/analisis_varianza/")
 source("../../mylibrary/RegresionMultiple.R")
 datos = datasets::trees
 datos
@@ -19,13 +19,12 @@ anov_mc;anov_m1
 
 anova_table(mc,m1)
 
-anova(m1,mc)
-anova(mc,m1)
-anova(mc)
-anova(m1)
 
 #2)
-m2 = lm('Volume ~ 1', datos)
-m2
+m2 = lm('Volume ~ 1', datos); m2
+summary(m2)
 
-anov$`F value`
+anov_m2 = anova_table(m2); anov_m2
+
+anova_table(mc, m2)
+anova_table(m2, mc)
