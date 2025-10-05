@@ -53,7 +53,7 @@ class LinearModel():
         if x == '.':
             x = list(self.rawdata.columns)
             x.remove(y)
-
+        
         if minus:
             if type(minus) == str:
                 minus = [minus]
@@ -142,10 +142,7 @@ class LinearModel():
             sc_parcial = [-models[i].SC['R'] + models[i+1].SC['R'] for i in range(len(models)-1)]
             gl_parcial = [-models[i].GL['R'] + models[i+1].GL['R'] for i in range(len(models)-1)]
             cm_parcial = [sc_parcial[i]/gl_parcial[i] for i in range(len(sc_parcial))]
-            print([sc_parcial[i]/gl_parcial[i] for i in range(len(sc_parcial))])
-            print([models[i+1].SC['R']/models[i+1].GL['R'] for i in range(len(models)-1)])
             F0_parcial = [(sc_parcial[i]/gl_parcial[i]) / (self.SC['E']/self.GL['E']) for i in range(len(cm_parcial))]
-            print(F0_parcial)
             p_value_parcial = [1 - stats.f.cdf(F0_parcial[i], gl_parcial[i], models[i].GL['E']) for i in range(len(F0_parcial))]
 
             anov_parcial = {'Fuente de variación' : self.x_names,

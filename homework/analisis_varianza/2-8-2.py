@@ -1,4 +1,4 @@
-from importador import LinearModel
+from importador import LinearModel, anova_between_lm
 import pandas as pd
 
 datos ='''n     youtube facebook newspaper sales
@@ -207,25 +207,24 @@ lines = [line.split()[1:] for line in lines]
 df = pd.DataFrame(lines[1:], columns=lines[0])
 
 
-mc     = LinearModel('sales', ['youtube', 'facebook', 'newspaper'], df)
-m_news = LinearModel('sales', ['newspaper'], df)
-m_face = LinearModel('sales', ['facebook'], df)
-m_yout = LinearModel('sales', ['youtube'], df)
-print(mc.Ttest())
-print()
-print(mc.anov_t)
-print()
-print(m_news.Ttest())
-print()
-print(m_news.anov_t)
-print()
-print(m_face.Ttest())
-print()
-print(m_face.anov_t)
-print()
-print(m_yout.Ttest())
-print()
-print(m_yout.anov_t)
-print()
+mc = LinearModel('sales', ['youtube', 'facebook', 'newspaper'], df)
+print(mc.anov_t.iloc[:,:3])
+print(mc.anov_t.iloc[:,3:])
 
+m1 = LinearModel('sales', ['youtube'], df)
+print(m1.anov_t.iloc[:,:3])
+print(m1.anov_t.iloc[:,3:])
+
+
+m2 = LinearModel('sales', '.', df, minus = ['newspaper'])
+print(m2.anov_t.iloc[:,:3])
+print(m2.anov_t.iloc[:,3:])
+
+a1 = anova_between_lm(mc,m1)
+a0 = anova_between_lm(m1,m2)
+
+print(a0.iloc[:,:4])
+print(a0.iloc[:,4:])
+print(a1.iloc[:,:4])
+print(a1.iloc[:,4:])
 
